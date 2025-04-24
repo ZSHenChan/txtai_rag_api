@@ -60,7 +60,7 @@ def load_index_if_needed():
   
 # --- HTTP Trigger Function ---
 @app.route("/api/search") # Defines the route /api/search
-@cross_origin(origins="localhost:")
+@cross_origin(origins=["localhost:","127.0.0.1","zishenchan.com"])
 @limiter.limit("100/minute")
 def search_portfolio():
     query = request.args.get('query')
