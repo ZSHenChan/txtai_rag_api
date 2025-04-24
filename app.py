@@ -12,6 +12,7 @@ from flask_cors import  cross_origin
 app = Flask(__name__)
 limiter = Limiter(get_remote_address,app=app, default_limits=["200 per day", "50 per hour"],
     storage_uri="memory://")
+
 # app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///data.db'
 # app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 # app.secret_key = 'secret'
@@ -109,4 +110,5 @@ def search_portfolio():
 if __name__ == '__main__':
     # from db import db
     # db.init_app(app)
-    app.run(port=5000, debug=True)
+    port = os.environ.get("PORT",4000) 
+    app.run(host="0.0.0.0",port=port, debug=True)
