@@ -8,6 +8,8 @@ from flask_cors import  cross_origin
 # import json
 # from security import authenticate, identity
 
+os.environ['KMP_DUPLICATE_LIB_OK']='True'
+
 '''This is section 4 app.py file.'''
 app = Flask(__name__)
 limiter = Limiter(get_remote_address,app=app, default_limits=["200 per day", "50 per hour"],
