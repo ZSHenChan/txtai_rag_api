@@ -1,6 +1,6 @@
-from flask import Flask, jsonify, request
-import logging
 import os
+import logging
+from flask import Flask, jsonify, request
 from txtai.embeddings import Embeddings
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
@@ -99,13 +99,13 @@ def search_portfolio():
         logging.error(f"Error during search execution for query '{query}': {e}", exc_info=True)
         return jsonify({"error":True,"results": "Cannot execute query"})
 
-
-# api.add_resource(Store, '/store/<string:name>')
-# api.add_resource(Item, '/item/<string:name>')
-# api.add_resource(ItemList, '/items')
-# api.add_resource(StoreList, '/stores')
-# api.add_resource(UserRegister, '/register')
-
+@app.route('/')
+def home():
+    # Simple health check endpoint
+    if embeddings_index:
+        return f"Service running. Index loaded with {embeddings_index.count()} items.", 200
+    else:
+        return "Service running, but index FAILED to load.", 503
 
 # Name is only set to main when file is explicitly run (not on imports):
 # if __name__ == '__main__':
