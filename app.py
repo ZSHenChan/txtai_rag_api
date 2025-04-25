@@ -8,16 +8,6 @@ from flask_cors import  cross_origin
 # import json
 # from security import authenticate, identity
 
-'''This is section 4 app.py file.'''
-app = Flask(__name__)
-limiter = Limiter(get_remote_address,app=app, default_limits=["200 per day", "50 per hour"],
-    storage_uri="memory://")
-
-# app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///data.db'
-# app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-# app.secret_key = 'secret'
-# api = Api(app)
-
 # --- Configuration ---
 # IMPORTANT: Get index path from App Setting / Mount Path
 # Example assuming Azure Files mount configured in App Settings/deployment
@@ -29,35 +19,46 @@ MODEL_NAME = os.environ.get("MODEL_NAME","sentence-transformers/all-mpnet-base-v
 embeddings_index = None
 is_loading = False # Simple flag to prevent concurrent loading attempts
 
+def preload_embeddings():
+    """Loads the index into the global variable. Called once at startup with --preload."""
+    global embeddings_index
+    logging.info("Attempting to preload index...")
+    logging.info(f"Using index path: {INDEX_PATH}")
+    logging.info(f"Using model name: {MODEL_NAME}")
 
-def load_index_if_needed():
-    """Loads the index if it hasn't been loaded for this instance yet."""
-    global embeddings_index, is_loading
-    # Basic check to prevent multiple loads if triggered concurrently on startup
-    if embeddings_index is None and not is_loading:
-        is_loading = True
-        logging.info(f"Attempting to load index from: {INDEX_PATH}")
-        try:
-            if os.path.exists(INDEX_PATH):
-                # Ensure content=True matches how index was saved/created
-                temp_embeddings = Embeddings(path=MODEL_NAME, content=True)
-                temp_embeddings.load(path=INDEX_PATH)
-                # Check if loading actually resulted in items
-                if temp_embeddings.count() > 0:
-                    embeddings_index = temp_embeddings # Assign to global var
-                    logging.info(f"Index loaded successfully. Count: {embeddings_index.count()}")
-                else:
-                    logging.error(f"Index loaded from {INDEX_PATH} but count is 0.")
-                    embeddings_index = None # Ensure it remains None if loading failed
-            else:
-                logging.error("Index path not found: %s", INDEX_PATH)
-                embeddings_index = None
-        except Exception as e:
-            logging.error(f"CRITICAL: Failed to load index: {e}", exc_info=True)
-            embeddings_index = None
-        finally:
-            is_loading = False # Release lock
+    if not os.path.isdir(INDEX_PATH): # More specific check for directory
+        logging.error(f"CRITICAL: Index path directory not found during preload: {INDEX_PATH}")
+        # You might want to list directory contents for debugging:
+        # try:
+        #     parent_dir = os.path.dirname(INDEX_PATH)
+        #     logging.error(f"Contents of parent directory ({parent_dir}): {os.listdir(parent_dir)}")
+        # except Exception as list_e:
+        #     logging.error(f"Could not list parent directory: {list_e}")
+        return # Stop if path invalid
 
+    try:
+        # Initialize and load
+        temp_embeddings = Embeddings(path=MODEL_NAME, content=True, device='cpu') # Force CPU on render unless GPU instance
+        temp_embeddings.load(path=INDEX_PATH)
+
+        # Check count AFTER loading
+        if temp_embeddings.count() > 0:
+            embeddings_index = temp_embeddings # Assign to global variable
+            logging.info(f"Index PRELOADED successfully. Count: {embeddings_index.count()}")
+        else:
+            logging.error(f"Index loaded from {INDEX_PATH} but count is 0 during preload.")
+            # embeddings_index remains None
+    except Exception as e:
+        logging.error(f"CRITICAL: Failed to preload index: {e}", exc_info=True)
+        # embeddings_index remains None
+
+
+'''This is section 4 app.py file.'''
+preload_embeddings()
+
+app = Flask(__name__)
+limiter = Limiter(get_remote_address,app=app, default_limits=["200 per day", "50 per hour"],
+    storage_uri="memory://")
   
 # --- HTTP Trigger Function ---
 @app.route("/api/search",methods=['GET']) # Defines the route /api/search
@@ -67,7 +68,7 @@ def search_portfolio():
     query = request.args.get('query')
     limit = request.args.get('limit', default=3, type=int)
 
-    load_index_if_needed()
+    # load_index_if_needed()
 
     # --- Check if index loading failed ---
     if embeddings_index is None:
