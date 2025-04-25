@@ -3,15 +3,15 @@
   "content": true,
   "dimensions": 768,
   "backend": "faiss",
-  "offset": 229,
+  "offset": 387,
   "build": {
-    "create": "2025-04-21T04:05:20Z",
-    "python": "3.9.18",
+    "create": "2025-04-25T05:24:19Z",
+    "python": "3.13.2",
     "settings": {
       "components": "IDMap,Flat"
     },
     "system": "Darwin (arm64)",
-    "txtai": "8.4.0"
+    "txtai": "8.5.0"
   },
-  "update": "2025-04-21T04:05:20Z"
+  "update": "2025-04-25T05:24:19Z"
 }

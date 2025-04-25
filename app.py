@@ -107,8 +107,8 @@ def search_portfolio():
 
 
 # Name is only set to main when file is explicitly run (not on imports):
-if __name__ == '__main__':
-    # from db import db
-    # db.init_app(app)
-    port = os.environ.get("PORT",4000) 
-    app.run(host="0.0.0.0",port=port, debug=True)
+# if __name__ == '__main__':
+#     # from db import db
+#     # db.init_app(app)
+#     port = os.environ.get("PORT",4000) 
+#     app.run(host="0.0.0.0",port=port, debug=True)
