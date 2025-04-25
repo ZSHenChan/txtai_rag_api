@@ -1,0 +1,3 @@
+INDEX_MOUNT_PATH = ./mounts/index
+MODEL_NAME = "sentence-transformers/all-mpnet-base-v2"
+PORT = 4000
