@@ -92,7 +92,7 @@ db.sqlite3
 data.db
 
 .idea/
-.vscode/
+
 .venv*/
 venv*/
 __pycache__/
@@ -102,3 +102,4 @@ htmlcov/
 .tox/
 docs/_build/
 .DS_Store
+.python_packages
